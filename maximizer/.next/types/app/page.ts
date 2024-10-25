@@ -1,4 +1,4 @@
-// File: C:\Users\Artem\Desktop\proj\Cross-AI-Yield-Maximizer\maximizer\src\app\page.js
+// File: /Users/artem/Desktop/hack/Cross-AI-Yield-Maximizer/maximizer/src/app/page.js
 import * as entry from '../../../src/app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
