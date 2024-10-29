@@ -1,0 +1,5 @@
+DEFINE_NEAR_METHOD(ProposalStatus)
+DEFINE_NEAR_METHOD(confirmAllocation)
+DEFINE_NEAR_METHOD(getUserProposals)
+DEFINE_NEAR_METHOD(proposeAllocation)
+DEFINE_NEAR_METHOD(rejectAllocation)

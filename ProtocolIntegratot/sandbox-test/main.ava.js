@@ -1,12 +1,10 @@
-import anyTest from 'ava';
+import test from 'ava';
 import { Worker } from 'near-workspaces';
-import { setDefaultResultOrder } from 'dns'; setDefaultResultOrder('ipv4first'); // temp fix for node >v17
 
 /**
  *  @typedef {import('near-workspaces').NearAccount} NearAccount
  *  @type {import('ava').TestFn<{worker: Worker, accounts: Record<string, NearAccount>}>}
  */
-const test = anyTest;
 
 test.beforeEach(async t => {
   // Create sandbox
@@ -31,15 +29,85 @@ test.afterEach.always(async (t) => {
   });
 });
 
-test('returns the default greeting', async (t) => {
+test('investWithConfirmation should invest funds in the selected protocol', async (t) => {
   const { contract } = t.context.accounts;
-  const greeting = await contract.view('get_greeting', {});
-  t.is(greeting, 'Hello');
+
+  // Create a proposal
+  const proposalId = await contract.call('createProposal', {
+    user_id: 'user1',
+    protocol: 'protocol1',
+    amount: '100',
+    risk_level: 50,
+  });
+
+  // Confirm the proposal
+  await contract.call('confirmAllocation', { proposalId });
+
+  // Invest with confirmation
+  await contract.call('investWithConfirmation', { proposalId });
+
+  // Check the investment status
+  const investmentStatus = await contract.view('getInvestmentStatus', { user_id: 'user1' });
+  t.is(investmentStatus.length, 1);
+  t.is(investmentStatus[0].protocol, 'protocol1');
+  t.is(investmentStatus[0].amount, '100');
 });
 
-test('changes the greeting', async (t) => {
-  const { root, contract } = t.context.accounts;
-  await root.call(contract, 'set_greeting', { greeting: 'Howdy' });
-  const greeting = await contract.view('get_greeting', {});
-  t.is(greeting, 'Howdy');
+test('withdrawFromProtocol should withdraw funds from the selected protocol', async (t) => {
+  const { contract } = t.context.accounts;
+
+  // Create a proposal
+  const proposalId = await contract.call('createProposal', {
+    user_id: 'user1',
+    protocol: 'protocol1',
+    amount: '100',
+    risk_level: 50,
+  });
+
+  // Confirm the proposal
+  await contract.call('confirmAllocation', { proposalId });
+
+  // Invest with confirmation
+  await contract.call('investWithConfirmation', { proposalId });
+
+  // Withdraw from the protocol
+  await contract.call('withdrawFromProtocol', { user_id: 'user1', protocol: 'protocol1' });
+
+  // Check the investment status
+  const investmentStatus = await contract.view('getInvestmentStatus', { user_id: 'user1' });
+  t.is(investmentStatus.length, 0);
+});
+
+test('getInvestmentStatus should return the current investment status for the user in different protocols', async (t) => {
+  const { contract } = t.context.accounts;
+
+  // Create proposals
+  const proposalId1 = await contract.call('createProposal', {
+    user_id: 'user1',
+    protocol: 'protocol1',
+    amount: '100',
+    risk_level: 50,
+  });
+  const proposalId2 = await contract.call('createProposal', {
+    user_id: 'user1',
+    protocol: 'protocol2',
+    amount: '200',
+    risk_level: 75,
+  });
+
+  // Confirm the proposals
+  await contract.call('confirmAllocation', { proposalId: proposalId1 });
+  await contract.call('confirmAllocation', { proposalId: proposalId2 });
+
+  // Invest with confirmation
+  await contract.call('investWithConfirmation', { proposalId: proposalId1 });
+  await contract.call('investWithConfirmation', { proposalId: proposalId2 }); 
+
+  // Check the investment status
+  const investmentStatus = await contract.view('getInvestmentStatus', { user_id: 'user1' });
+  t.is(investmentStatus.length, 2);
+  t.is(investmentStatus[0].protocol, 'protocol1');
+  t.is(investmentStatus[0].amount, '100');
+  t.is(investmentStatus[1].protocol, 'protocol2');
+  t.is(investmentStatus[1].amount, '200');
 });

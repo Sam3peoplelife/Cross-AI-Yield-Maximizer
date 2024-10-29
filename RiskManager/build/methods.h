@@ -1,0 +1,2 @@
+DEFINE_NEAR_METHOD(getUserRiskProfile)
+DEFINE_NEAR_METHOD(setUserRiskProfile)

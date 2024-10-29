@@ -1,0 +1,3 @@
+DEFINE_NEAR_METHOD(bridgeTransfer)
+DEFINE_NEAR_METHOD(checkProposalStatus)
+DEFINE_NEAR_METHOD(getBridgeStatus)
