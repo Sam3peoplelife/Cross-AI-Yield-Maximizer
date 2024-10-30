@@ -1,0 +1,21 @@
+static getUserInvestments({ user_id }: { user_id: string }): Investment[] {
+    // Return a list of investments for the given user
+    const investments = this.investments.filter(investment => investment.user_id === user_id);
+    return investments;
+  }
+Property 'investments' does not exist on type 'typeof ProtocolIntegrator'.ts(2339)
+
+static getUserProposals({ user_id }: { user_id: string }): Proposal[] {
+    // Return a list of proposals for the given user
+    const proposals = this.proposals.filter(proposal => proposal.user_id === user_id);
+    return proposals;
+  }
+Property 'proposals' does not exist on type 'typeof AssetManager'.ts(2339)
+
+ static confirmAllocation(arg0: { user_id: string; proposalId: any; }) {
+    throw new Error('Method not implemented.');
+  }
+
+  static harvest(arg0: { user_id: string; investmentId: any; }) {
+    throw new Error('Method not implemented.');
+  }

@@ -1,0 +1,3 @@
+DEFINE_NEAR_METHOD(getInvestmentStatus)
+DEFINE_NEAR_METHOD(investWithConfirmation)
+DEFINE_NEAR_METHOD(withdrawFromProtocol)

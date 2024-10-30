@@ -1,12 +1,6 @@
-import anyTest from 'ava';
+import test from 'ava';
 import { Worker } from 'near-workspaces';
-import { setDefaultResultOrder } from 'dns'; setDefaultResultOrder('ipv4first'); // temp fix for node >v17
-
-/**
- *  @typedef {import('near-workspaces').NearAccount} NearAccount
- *  @type {import('ava').TestFn<{worker: Worker, accounts: Record<string, NearAccount>}>}
- */
-const test = anyTest;
+import { NearBindgen, near, call, view } from 'near-sdk-js';
 
 test.beforeEach(async t => {
   // Create sandbox
@@ -31,15 +25,72 @@ test.afterEach.always(async (t) => {
   });
 });
 
-test('returns the default greeting', async (t) => {
+test('bridgeTransfer should transfer assets between chains', async (t) => {
   const { contract } = t.context.accounts;
-  const greeting = await contract.view('get_greeting', {});
-  t.is(greeting, 'Hello');
+
+  // Create a proposal
+  const proposalId = await contract.call('createProposal', {
+    user_id: 'user1',
+    protocol: 'protocol1',
+    amount: '100',
+    risk_level: 50,
+  });
+
+  // Confirm the proposal
+  await contract.call('confirmAllocation', { proposalId });
+
+  // Perform the bridge transfer
+  await contract.call('bridgeTransfer', {
+    user_id: 'user1',
+    protocol: 'protocol1',
+    amount: '100',
+    proposalId,
+  });
+
+  // Check the proposal status
+  const proposalStatus = await contract.view('checkProposalStatus', { proposalId });
+  t.is(proposalStatus, 'Invested');
 });
 
-test('changes the greeting', async (t) => {
-  const { root, contract } = t.context.accounts;
-  await root.call(contract, 'set_greeting', { greeting: 'Howdy' });
-  const greeting = await contract.view('get_greeting', {});
-  t.is(greeting, 'Howdy');
+test('checkProposalStatus should return the proposal status', async (t) => {
+  const { contract } = t.context.accounts;
+
+  // Create a proposal
+  const proposalId = await contract.call('createProposal', {
+    user_id: 'user1',
+    protocol: 'protocol1',
+    amount: '100',
+    risk_level: 50,
+  });
+
+  // Check the proposal status
+  const proposalStatus = await contract.view('checkProposalStatus', { proposalId });
+  t.is(proposalStatus, 'Pending');
+});
+
+test('getBridgeStatus should return the bridge transfer status', async (t) => {
+  const { contract } = t.context.accounts;
+
+  // Create a proposal
+  const proposalId = await contract.call('createProposal', {
+    user_id: 'user1',
+    protocol: 'protocol1',
+    amount: '100',
+    risk_level: 50,
+  });
+
+  // Confirm the proposal
+  await contract.call('confirmAllocation', { proposalId });
+
+  // Perform the bridge transfer
+  const bridgeTransferId = await contract.call('bridgeTransfer', {
+    user_id: 'user1',
+    protocol: 'protocol1',
+    amount: '100',
+    proposalId,
+  });
+
+  // Check the bridge transfer status
+  const bridgeStatus = await contract.view('getBridgeStatus', { transactionId: bridgeTransferId });
+  t.is(bridgeStatus, 'Pending');
 });

@@ -2,8 +2,12 @@ import { NearBindgen, near, call, view } from 'near-sdk-js';
 
 @NearBindgen({})
 class RiskManager {
+  static getUserRiskProfile(arg0: { user_id: string; }) {
+    throw new Error('Method not implemented.');
+  }
   private riskProfiles: Map<string, RiskProfile> = new Map();
 
+  //@ts-ignore
   @call({}) // This method changes the state, for which it cost gas
   setUserRiskProfile({ user_id, risk_level }: { user_id: string, risk_level: number }): void {
     // Validate input parameters
@@ -15,6 +19,7 @@ class RiskManager {
     this.riskProfiles.set(user_id, { user_id, risk_level });
   }
 
+  //@ts-ignore
   @view({}) // This method is read-only and can be called for free
   getUserRiskProfile({ user_id }: { user_id: string }): RiskProfile | null {
     // Return the risk profile for the user, or null if not found
