@@ -26,13 +26,11 @@ export enum InvestmentStatus {
 class ProtocolIntegrator {
   private static investments: Investment[] = [];
 
+  //@ts-ignore
+  @view({})
   static getUserInvestments({ user_id }: { user_id: string }): Investment[] {
     // Return a list of investments for the given user
     return ProtocolIntegrator.investments.filter(investment => investment.user_id === user_id);
-  }
-  
-  static harvest(arg0: { user_id: string; investmentId: any; }) {
-    throw new Error('Method not implemented.');
   }
 
   private investments: Map<string, Investment> = new Map();

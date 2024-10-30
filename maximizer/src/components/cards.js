@@ -6,15 +6,26 @@ export const Cards = () => {
   return (
     <div className={styles.grid}>
       <Link
-        href="https://docs.near.org/build/web3-apps/quickstart"
+        href="https://t.me/Yield_Maximizer_AI_bot"
         className={styles.card}
         target='_blank'
         rel="noopener noreferrer"
       >
         <h2>
-          Near Docs <span>-&gt;</span>
+          Our Wallet <span>-&gt;</span>
         </h2>
-        <p>Learn how this application works, and what you can build on Near.</p>
+        <p>Checkout our wallet in telegram bot</p>
+      </Link>
+
+      <Link
+        href="https://t.me/pixel_fight_yieldai_bot/MCMGW3H"
+        className={styles.card}
+        rel="noopener noreferrer"
+      >
+        <h2>
+          Play2Earn Game <span>-&gt;</span>
+        </h2>
+        <p>Also you can try our game to win rewards</p>
       </Link>
 
       <Link
@@ -23,9 +34,9 @@ export const Cards = () => {
         rel="noopener noreferrer"
       >
         <h2>
-          Near Integration <span>-&gt;</span>
+          Yield Maximizer <span>-&gt;</span>
         </h2>
-        <p>Discover how simple it is to interact with a Near smart contract.</p>
+        <p>Try out our new tool for yielding with AI</p>
       </Link>
     </div>
   );

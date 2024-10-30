@@ -1,69 +1,80 @@
 'use client';
 import { useState, useEffect, useContext } from 'react';
-
-import styles from '@/app/app.module.css';
-import { Cards } from '@/components/cards';
-
 import { NearContext } from '@/wallets/near';
-import { HelloNearContract } from '@/config';
+import axios from 'axios';
 
-// Contract that the app will interact with
-const CONTRACT = HelloNearContract;
+const CONTRACTS = {
+  protocolIntegrator: require('../../../dist/PI/contract'),
+  riskManager: require('../../../dist/RM/contract'),
+  assetManager: require('../../../dist/AM/contract'),
+  crossChainBridge: require('../../../dist/CCB/contract'),
+};
 
-export default function HelloNear() {
+const page = () => {
   const { signedAccountId, wallet } = useContext(NearContext);
-
-  const [greeting, setGreeting] = useState('loading...');
-  const [newGreeting, setNewGreeting] = useState('loading...');
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [showSpinner, setShowSpinner] = useState(false);
+  const [protocol, setProtocol] = useState('');
+  const [tvlPrediction, setTvlPrediction] = useState(0);
+  const [previousTvl, setPreviousTvl] = useState(0);
+  const [confirmButtonDisabled, setConfirmButtonDisabled] = useState(true);
+  const [rejectButtonDisabled, setRejectButtonDisabled] = useState(true);
 
   useEffect(() => {
     if (!wallet) return;
-
-    wallet.viewMethod({ contractId: CONTRACT, method: 'get_greeting' })
-      .then(greeting => setGreeting(greeting));
+    const uniqueNames = ['Aave', 'Compound', 'MakerDAO']; // hardcoded for now
+    setProtocol(uniqueNames[0]);
   }, [wallet]);
 
-  useEffect(() => {
-    setLoggedIn(!!signedAccountId);
-  }, [signedAccountId]);
+  const handleProtocolChange = async (event) => {
+    const selectedProtocol = event.target.value;
+    setProtocol(selectedProtocol);
+    const response = await axios.get(`http://localhost:3001/predict/${selectedProtocol}`);
+    const predictedTvl = response.data.prediction;
+    setTvlPrediction(predictedTvl);
+    setConfirmButtonDisabled(false);
+    setRejectButtonDisabled(false);
+  };
 
-  const storeGreeting = async () => {
-    setShowSpinner(true);
-    await wallet.callMethod({ contractId: CONTRACT, method: 'set_greeting', args: { greeting: newGreeting } });
-    const greeting = await wallet.viewMethod({ contractId: CONTRACT, method: 'get_greeting' });
-    setGreeting(greeting);
-    setShowSpinner(false);
+  const handleConfirm = async () => {
+    if (!wallet || !signedAccountId) return;
+    const protocolId = protocol;
+    const tvl = tvlPrediction;
+    const riskLevel = await riskManager.getRiskLevel(signedAccountId);
+    await protocolIntegrator.proposeAllocation(protocolId, tvl, riskLevel);
+    await assetManager.depositAsset(protocolId, tvl);
+    await crossChainBridge.crossChainTransfer(protocolId, tvl);
+    setConfirmButtonDisabled(true);
+    setRejectButtonDisabled(true);
+  };
+
+  const handleReject = async () => {
+    if (!wallet || !signedAccountId) return;
+    const protocolId = protocol;
+    const tvl = tvlPrediction;
+    const riskLevel = await riskManager.getRiskLevel(signedAccountId);
+    await protocolIntegrator.rejectAllocation(protocolId, tvl, riskLevel);
+    setConfirmButtonDisabled(true);
+    setRejectButtonDisabled(true);
   };
 
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Interacting with the contract: &nbsp;
-          <code className={styles.code}>{CONTRACT}</code>
-        </p>
-      </div>
-
-      <div className={styles.center}>
-        <h1 className="w-100"> The contract says: <code>{greeting}</code> </h1>
-        <div className="input-group" hidden={!loggedIn}>
-          <input type="text" className="form-control w-20" placeholder="Store a new greeting" onChange={t => setNewGreeting(t.target.value)} />
-          <div className="input-group-append">
-            <button className="btn btn-secondary" onClick={storeGreeting}>
-              <span hidden={showSpinner}> Save </span>
-              <i className="spinner-border spinner-border-sm" hidden={!showSpinner}></i>
-            </button>
-          </div>
-        </div>
-        <div className='w-100 text-end align-text-center' hidden={loggedIn}>
-          <p className='m-0'> Please login to change the greeting </p>
-        </div>
-      </div>
-      <div className={styles.grid}>
-        <Cards />
-      </div>
-    </main>
+    <div>
+      <h1>Protocol Selection</h1>
+      <select value={protocol} onChange={handleProtocolChange}>
+        {['Aave', 'Compound', 'MakerDAO'].map((name) => (
+          <option key={name} value={name}>
+            {name}
+          </option>
+        ))}
+      </select>
+      <p>TVL Prediction: {tvlPrediction}</p>
+      <button onClick={handleConfirm} disabled={confirmButtonDisabled}>
+        Confirm
+      </button>
+      <button onClick={handleReject} disabled={rejectButtonDisabled}>
+        Reject
+      </button>
+    </div>
   );
-}
+};
+
+export default page;

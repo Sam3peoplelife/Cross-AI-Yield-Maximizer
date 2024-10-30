@@ -24,7 +24,7 @@ async function fetchProtocolData(protocolName) {
 function padInput(input, targetLength = 10) {
     const paddedInput = [...input];
     while (paddedInput.length < targetLength) {
-      paddedInput.push(0); // Додаємо нулі для заповнення
+      paddedInput.push(0);
     }
     return new Int32Array(paddedInput.slice(0, targetLength)); // Convert to TypedArray
   }

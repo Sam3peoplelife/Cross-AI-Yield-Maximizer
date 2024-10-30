@@ -2,3 +2,4 @@ node_modules
 defi_data
 defi_dataset.csv
 .next
+errors.txt

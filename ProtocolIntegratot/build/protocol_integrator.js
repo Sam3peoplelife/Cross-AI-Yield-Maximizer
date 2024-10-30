@@ -2512,10 +2512,25 @@ function NearBindgen({
   };
 }
 
-var _dec, _dec2, _dec3, _dec4, _class, _class2;
-let ProtocolIntegrator = (_dec = NearBindgen({}), _dec2 = call({}), _dec3 = call({}), _dec4 = view(), _dec(_class = (_class2 = class ProtocolIntegrator {
+var _dec, _dec2, _dec3, _dec4, _dec5, _class, _class2;
+let InvestmentStatus = /*#__PURE__*/function (InvestmentStatus) {
+  InvestmentStatus[InvestmentStatus["Deployed"] = 0] = "Deployed";
+  return InvestmentStatus;
+}({}); // Add other statuses as needed
+let ProtocolIntegrator = (_dec = NearBindgen({}), _dec2 = view(), _dec3 = call({}), _dec4 = call({}), _dec5 = view(), _dec(_class = (_class2 = class ProtocolIntegrator {
+  static investments = [];
+
+  //@ts-ignore
+  static getUserInvestments({
+    user_id
+  }) {
+    // Return a list of investments for the given user
+    return ProtocolIntegrator.investments.filter(investment => investment.user_id === user_id);
+  }
   investments = new Map();
   proposals = new Map();
+
+  //@ts-ignore
   investWithConfirmation({
     proposalId
   }) {
@@ -2531,10 +2546,13 @@ let ProtocolIntegrator = (_dec = NearBindgen({}), _dec2 = call({}), _dec3 = call
       user_id: proposal.user_id,
       protocol: proposal.protocol,
       amount: proposal.amount,
-      investmentDate: new Date().toISOString()
+      investmentDate: new Date().toISOString(),
+      status: InvestmentStatus.Deployed
     };
     this.investments.set(investmentId, investment);
   }
+
+  //@ts-ignore
   withdrawFromProtocol({
     user_id,
     protocol
@@ -2545,13 +2563,14 @@ let ProtocolIntegrator = (_dec = NearBindgen({}), _dec2 = call({}), _dec3 = call
       this.investments.delete(investment.investmentId);
     });
   }
+  //@ts-ignore
   getInvestmentStatus({
     user_id
   }) {
     // Return the current investment status for the user in different protocols
     return Array.from(this.investments.values()).filter(investment => investment.user_id === user_id);
   }
-}, _applyDecoratedDescriptor(_class2.prototype, "investWithConfirmation", [_dec2], Object.getOwnPropertyDescriptor(_class2.prototype, "investWithConfirmation"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "withdrawFromProtocol", [_dec3], Object.getOwnPropertyDescriptor(_class2.prototype, "withdrawFromProtocol"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "getInvestmentStatus", [_dec4], Object.getOwnPropertyDescriptor(_class2.prototype, "getInvestmentStatus"), _class2.prototype), _class2)) || _class);
+}, _applyDecoratedDescriptor(_class2, "getUserInvestments", [_dec2], Object.getOwnPropertyDescriptor(_class2, "getUserInvestments"), _class2), _applyDecoratedDescriptor(_class2.prototype, "investWithConfirmation", [_dec3], Object.getOwnPropertyDescriptor(_class2.prototype, "investWithConfirmation"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "withdrawFromProtocol", [_dec4], Object.getOwnPropertyDescriptor(_class2.prototype, "withdrawFromProtocol"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "getInvestmentStatus", [_dec5], Object.getOwnPropertyDescriptor(_class2.prototype, "getInvestmentStatus"), _class2.prototype), _class2)) || _class);
 function getInvestmentStatus() {
   const _state = ProtocolIntegrator._getState();
   if (!_state && ProtocolIntegrator._requireInit()) {
@@ -2593,6 +2612,19 @@ function investWithConfirmation() {
   ProtocolIntegrator._saveToStorage(_contract);
   if (_result !== undefined) if (_result && _result.constructor && _result.constructor.name === "NearPromise") _result.onReturn();else env.value_return(ProtocolIntegrator._serialize(_result, true));
 }
+function getUserInvestments() {
+  const _state = ProtocolIntegrator._getState();
+  if (!_state && ProtocolIntegrator._requireInit()) {
+    throw new Error("Contract must be initialized");
+  }
+  const _contract = ProtocolIntegrator._create();
+  if (_state) {
+    ProtocolIntegrator._reconstruct(_contract, _state);
+  }
+  const _args = ProtocolIntegrator._getArgs();
+  const _result = _contract.getUserInvestments(_args);
+  if (_result !== undefined) if (_result && _result.constructor && _result.constructor.name === "NearPromise") _result.onReturn();else env.value_return(ProtocolIntegrator._serialize(_result, true));
+}
 
-export { getInvestmentStatus, investWithConfirmation, withdrawFromProtocol };
+export { InvestmentStatus, getInvestmentStatus, getUserInvestments, investWithConfirmation, withdrawFromProtocol };
 //# sourceMappingURL=protocol_integrator.js.map
